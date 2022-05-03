@@ -77,7 +77,7 @@ void initIncidenceModule() {
   if (!GetIt.I.isRegistered<IncidenceUseCase>()) {
     instance.registerLazySingleton<IncidenceUseCase>(
         () => IncidenceUseCase(instance()));
-    instance.registerLazySingleton<IncidenceViewModel>(
-        () => IncidenceViewModel(instance(),instance()));
+    instance.registerLazySingleton<IncidenceViewModel>(() =>
+        IncidenceViewModel(instance(), instance(), instance(), instance()));
   }
 }

@@ -1,6 +1,9 @@
+import 'package:appwrite_incidence_supervisor/app/app_preferences.dart';
+import 'package:appwrite_incidence_supervisor/data/data_source/local_data_source.dart';
 import 'package:appwrite_incidence_supervisor/domain/model/incidence_model.dart';
 import 'package:appwrite_incidence_supervisor/domain/model/incidence_sel.dart';
 import 'package:appwrite_incidence_supervisor/domain/model/name_model.dart';
+import 'package:appwrite_incidence_supervisor/domain/model/user_model.dart';
 import 'package:appwrite_incidence_supervisor/domain/usecase/incidence_usecase.dart';
 import 'package:appwrite_incidence_supervisor/intl/generated/l10n.dart';
 import 'package:appwrite_incidence_supervisor/presentation/base/base_viewmodel.dart';
@@ -18,11 +21,15 @@ class IncidenceViewModel extends BaseViewModel
     with IncidenceViewModelInputs, IncidenceViewModelOutputs {
   final IncidenceUseCase _incidenceUseCase;
   final DialogRender _dialogRender;
+  final AppPreferences _appPreferences;
+  final LocalDataSource _localDataSource;
 
-  IncidenceViewModel(this._incidenceUseCase,this._dialogRender);
+  IncidenceViewModel(this._incidenceUseCase, this._dialogRender,
+      this._appPreferences, this._localDataSource);
 
   final _prioritysStrCtrl = BehaviorSubject<List<Name>>();
   final _incidenceSelStrCtrl = BehaviorSubject<IncidenceSel>();
+  final _userStrCtrl = BehaviorSubject<UsersModel>();
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -37,6 +44,8 @@ class IncidenceViewModel extends BaseViewModel
     _prioritysStrCtrl.close();
     await _incidenceSelStrCtrl.drain();
     _incidenceSelStrCtrl.close();
+    await _userStrCtrl.drain();
+    _userStrCtrl.close();
     super.dispose();
   }
 
@@ -47,12 +56,18 @@ class IncidenceViewModel extends BaseViewModel
   Sink get inputIncidenceSel => _incidenceSelStrCtrl.sink;
 
   @override
+  Sink get inputUser => _userStrCtrl.sink;
+
+  @override
   Stream<List<Name>> get outputPrioritys =>
       _prioritysStrCtrl.stream.map((prioritys) => prioritys);
 
   @override
   Stream<IncidenceSel> get outputIncidenceSel =>
       _incidenceSelStrCtrl.stream.map((incidenceSel) => incidenceSel);
+
+  @override
+  Stream<UsersModel> get outputUser => _userStrCtrl.stream.map((user) => user);
 
   @override
   Future<Incidence?> incidence(BuildContext context, String incidenceId) async {
@@ -104,14 +119,41 @@ class IncidenceViewModel extends BaseViewModel
       inputPrioritys.add(prioritys);
     });
   }
+
   @override
   createIncidence(Incidence incidence, BuildContext context) async {
     final s = S.of(context);
     (await _incidenceUseCase.incidenceCreate(incidence)).fold(
-            (l) => _dialogRender.showPopUp(context, DialogRendererType.errorDialog,
+        (l) => _dialogRender.showPopUp(context, DialogRendererType.errorDialog,
             (s.error).toUpperCase(), l.message, null, null, null), (r) {
       inputIncidenceSel.add(IncidenceSel());
       GoRouter.of(context).go(Routes.mainRoute);
+    });
+  }
+
+  @override
+  deleteSession(BuildContext context) async {
+    final s = S.of(context);
+    inputState.add(LoadingState(
+        stateRendererType: StateRendererType.fullScreenLoadingState,
+        message: s.loading));
+    final sessionId = _appPreferences.getSessionId();
+    (await _incidenceUseCase.deleteSession(sessionId)).fold((f) {
+      inputState
+          .add(ErrorState(StateRendererType.fullScreenErrorState, f.message));
+    }, (r) async {
+      inputState.add(ContentState());
+      await _appPreferences.logout();
+      _localDataSource.clearCache();
+      GoRouter.of(context).go(Routes.splashRoute);
+    });
+  }
+
+  @override
+  account() async {
+    (await _incidenceUseCase.user(_appPreferences.getUserId()))
+        .fold((f) => null, (user) async {
+      inputUser.add(user);
     });
   }
 }
@@ -121,17 +163,27 @@ abstract class IncidenceViewModelInputs {
 
   Sink get inputIncidenceSel;
 
+  Sink get inputUser;
+
   Future<Incidence?> incidence(BuildContext context, String incidenceId);
 
   changeIncidenceSel(IncidenceSel incidenceSel);
 
   pickImage(IncidenceSel incidenceSel);
 
-  prioritys(); createIncidence(Incidence incidence, BuildContext context);
+  prioritys();
+
+  createIncidence(Incidence incidence, BuildContext context);
+
+  deleteSession(BuildContext context);
+
+  account();
 }
 
 abstract class IncidenceViewModelOutputs {
   Stream<List<Name>> get outputPrioritys;
 
   Stream<IncidenceSel> get outputIncidenceSel;
+
+  Stream<UsersModel> get outputUser;
 }

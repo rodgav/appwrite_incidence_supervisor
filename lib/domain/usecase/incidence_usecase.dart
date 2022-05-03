@@ -4,6 +4,7 @@ import 'package:appwrite/models.dart';
 import 'package:appwrite_incidence_supervisor/data/network/failure.dart';
 import 'package:appwrite_incidence_supervisor/domain/model/incidence_model.dart';
 import 'package:appwrite_incidence_supervisor/domain/model/name_model.dart';
+import 'package:appwrite_incidence_supervisor/domain/model/user_model.dart';
 import 'package:appwrite_incidence_supervisor/domain/repository/repository.dart';
 import 'package:dartz/dartz.dart';
 
@@ -15,7 +16,9 @@ class IncidenceUseCase
         IncidenceUseCaseIncidence<String, Incidence>,
         IncidenceUseCaseCreateFile<IncidenceUseCaseFile, File>,
         IncidencesUseCasePrioritys<void, List<Name>>,
-        IncidenceUseCaseIncidenceCreate<Incidence, Incidence> {
+        IncidenceUseCaseIncidenceCreate<Incidence, Incidence>,
+        IncidenceUseCaseDeleteSession<String, dynamic>,
+        IncidenceUseCaseAccount<String, UsersModel> {
   final Repository _repository;
 
   IncidenceUseCase(this._repository);
@@ -39,6 +42,13 @@ class IncidenceUseCase
   @override
   Future<Either<Failure, Incidence>> incidenceCreate(Incidence incidence) =>
       _repository.incidenceCreate(incidence);
+
+  @override
+  Future<Either<Failure, dynamic>> deleteSession(String sessionId) =>
+      _repository.deleteSession(sessionId);
+  @override
+  Future<Either<Failure, UsersModel>> user(String userId) =>
+      _repository.user(userId);
 }
 
 class IncidenceUseCaseFile {
@@ -63,3 +73,11 @@ abstract class IncidencesUseCasePrioritys<In, Out> {
 abstract class IncidenceUseCaseIncidenceCreate<In, Out> {
   Future<Either<Failure, Out>> incidenceCreate(In input);
 }
+
+abstract class IncidenceUseCaseDeleteSession<In, Out> {
+  Future<Either<Failure, Out>> deleteSession(In input);
+}
+abstract class  IncidenceUseCaseAccount<In, Out> {
+  Future<Either<Failure, Out>> user(In input);
+}
+

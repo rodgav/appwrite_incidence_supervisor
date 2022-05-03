@@ -409,6 +409,36 @@ class S {
       args: [],
     );
   }
+
+  /// `Usuario`
+  String get user {
+    return Intl.message(
+      'Usuario',
+      name: 'user',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tipo de usuario`
+  String get typeUser {
+    return Intl.message(
+      'Tipo de usuario',
+      name: 'typeUser',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Área`
+  String get area {
+    return Intl.message(
+      'Área',
+      name: 'area',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

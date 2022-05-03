@@ -35,5 +35,8 @@
   "supervisor": "Supervisor",
   "solution": "Solution",
   "dateSolution": "Date solution",
-  "changeLanguage": "Change language"
+  "changeLanguage": "Change language",
+  "user": "User",
+  "typeUser": "Type user",
+  "area": "Area"
 }

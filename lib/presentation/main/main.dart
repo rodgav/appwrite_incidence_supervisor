@@ -2,6 +2,7 @@ import 'package:appwrite_incidence_supervisor/app/app_preferences.dart';
 import 'package:appwrite_incidence_supervisor/app/dependency_injection.dart';
 import 'package:appwrite_incidence_supervisor/domain/model/incidence_model.dart';
 import 'package:appwrite_incidence_supervisor/domain/model/incidence_sel.dart';
+import 'package:appwrite_incidence_supervisor/domain/model/user_model.dart';
 import 'package:appwrite_incidence_supervisor/intl/generated/l10n.dart';
 import 'package:appwrite_incidence_supervisor/presentation/common/state_render/state_render_impl.dart';
 import 'package:appwrite_incidence_supervisor/presentation/global_widgets/incidence.dart';
@@ -79,25 +80,44 @@ class _MainViewState extends State<MainView> {
             ),
           ),
           const SizedBox(width: AppSize.s10),
-          SizedBox(
-            width: AppSize.s60,
-            child: PopupMenuButton<String>(
-                tooltip: _appPreferences.getName(),
-                itemBuilder: (_) => [
-                      PopupMenuItem(
-                          child: SizedBox(
-                        height: AppSize.s200,
-                        child: Center(child: Text(_appPreferences.getName())),
-                      )),
-                      PopupMenuItem(
-                        child: ListTile(
-                          leading: const Icon(Icons.close),
-                          title: Text(s.close),onTap: (){_viewModel.deleteSession(context);},
-                        ),
-                      )
-                    ],
-                icon: Icon(Icons.person, color: ColorManager.black)),
-          ),
+          StreamBuilder<UsersModel>(
+              stream: _viewModel.outputUser,
+              builder: (_, snapshot) {
+                final user = snapshot.data;
+                return SizedBox(
+                  width: AppSize.s60,
+                  child: PopupMenuButton<String>(
+                      tooltip: user?.name ?? s.user,
+                      itemBuilder: (_) => [
+                            PopupMenuItem(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: AppPadding.p10, horizontal: 40),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('${s.user}: ${user?.name ?? s.user}'),
+                                  Text(
+                                      '${s.typeUser}: ${user?.typeUser ?? s.typeUser}'),
+                                  Text(
+                                      '${s.active}: ${user?.active ?? s.active}'),
+                                  Text('${s.area}: ${user?.area ?? s.area}'),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem(
+                              child: ListTile(
+                                leading: const Icon(Icons.close),
+                                title: Text(s.close),
+                                onTap: () {
+                                  _viewModel.deleteSession(context);
+                                },
+                              ),
+                            )
+                          ],
+                      icon: Icon(Icons.person, color: ColorManager.black)),
+                );
+              }),
           const SizedBox(width: AppSize.s10)
         ],
       ),

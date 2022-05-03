@@ -8,7 +8,7 @@ import 'package:dartz/dartz.dart';
 class MainUseCase
     implements
         BaseUseCase<MainUseCaseInput, List<Incidence>>,
-        MainUseCaseDeleteSession<MainDeleteSessionUseCaseInput, dynamic>,
+        MainUseCaseDeleteSession<String, dynamic>,
         MainUseCaseAccount<String, UsersModel> {
   final Repository _repository;
 
@@ -19,9 +19,8 @@ class MainUseCase
       _repository.incidences(input.queries, input.limit, input.offset);
 
   @override
-  Future<Either<Failure, dynamic>> deleteSession(
-          MainDeleteSessionUseCaseInput input) =>
-      _repository.deleteSession(input.sessionId);
+  Future<Either<Failure, dynamic>> deleteSession(String sessionId) =>
+      _repository.deleteSession(sessionId);
 
   @override
   Future<Either<Failure, UsersModel>> user(String userId) =>
@@ -33,12 +32,6 @@ class MainUseCaseInput {
   int limit, offset;
 
   MainUseCaseInput(this.queries, this.limit, this.offset);
-}
-
-class MainDeleteSessionUseCaseInput {
-  String sessionId;
-
-  MainDeleteSessionUseCaseInput(this.sessionId);
 }
 
 abstract class MainUseCaseDeleteSession<In, Out> {

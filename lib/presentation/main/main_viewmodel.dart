@@ -3,13 +3,13 @@ import 'package:appwrite_incidence_supervisor/app/app_preferences.dart';
 import 'package:appwrite_incidence_supervisor/data/data_source/local_data_source.dart';
 import 'package:appwrite_incidence_supervisor/domain/model/incidence_model.dart';
 import 'package:appwrite_incidence_supervisor/domain/model/incidence_sel.dart';
+import 'package:appwrite_incidence_supervisor/domain/model/user_model.dart';
 import 'package:appwrite_incidence_supervisor/domain/usecase/main_usecase.dart';
 import 'package:appwrite_incidence_supervisor/intl/generated/l10n.dart';
 import 'package:appwrite_incidence_supervisor/presentation/base/base_viewmodel.dart';
 import 'package:appwrite_incidence_supervisor/presentation/common/state_render/state_render.dart';
 import 'package:appwrite_incidence_supervisor/presentation/common/state_render/state_render_impl.dart';
 import 'package:appwrite_incidence_supervisor/presentation/resources/routes_manager.dart';
-import 'package:appwrite_incidence_supervisor/presentation/resources/strings_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rxdart/rxdart.dart';
@@ -26,6 +26,7 @@ class MainViewModel extends BaseViewModel
   final _activesStrCtrl = BehaviorSubject<List<bool>?>();
   final _incidenceSelStrCtrl = BehaviorSubject<IncidenceSel>();
   final _isLoading = BehaviorSubject<bool>();
+  final _userStrCtrl = BehaviorSubject<UsersModel>();
   final List<Incidence> _incidences = [];
 
   @override
@@ -45,6 +46,8 @@ class MainViewModel extends BaseViewModel
     _incidenceSelStrCtrl.close();
     await _isLoading.drain();
     _isLoading.close();
+    await _userStrCtrl.drain();
+    _userStrCtrl.close();
     super.dispose();
   }
 
@@ -61,6 +64,9 @@ class MainViewModel extends BaseViewModel
   Sink get inputIsLoading => _isLoading.sink;
 
   @override
+  Sink get inputUser => _userStrCtrl.sink;
+
+  @override
   Stream<List<Incidence>> get outputIncidences =>
       _incidencesStrCtrl.stream.map((incidences) => incidences);
 
@@ -75,6 +81,9 @@ class MainViewModel extends BaseViewModel
   @override
   Stream<bool> get outputIsLoading =>
       _isLoading.stream.map((isLoading) => isLoading);
+
+  @override
+  Stream<UsersModel> get outputUser => _userStrCtrl.stream.map((user) => user);
 
   @override
   incidences(bool firstQuery) async {
@@ -99,6 +108,7 @@ class MainViewModel extends BaseViewModel
       });
       changeIsLoading(false);
     }
+    account();
   }
 
   @override
@@ -146,13 +156,16 @@ class MainViewModel extends BaseViewModel
     } else {
       await incidencesActive(incidenceSel.active ?? false);
     }
-  }@override
-  deleteSession(BuildContext context) async {final s = S.of(context);
+  }
+
+  @override
+  deleteSession(BuildContext context) async {
+    final s = S.of(context);
     inputState.add(LoadingState(
         stateRendererType: StateRendererType.fullScreenLoadingState,
         message: s.loading));
     final sessionId = _appPreferences.getSessionId();
-    (await _mainUseCase.deleteSession(MainDeleteSessionUseCaseInput(sessionId)))
+    (await _mainUseCase.deleteSession(sessionId))
         .fold((f) {
       inputState
           .add(ErrorState(StateRendererType.fullScreenErrorState, f.message));
@@ -161,6 +174,14 @@ class MainViewModel extends BaseViewModel
       await _appPreferences.logout();
       _localDataSource.clearCache();
       GoRouter.of(context).go(Routes.splashRoute);
+    });
+  }
+
+  @override
+  account() async {
+    (await _mainUseCase.user(_appPreferences.getUserId())).fold((f) => null,
+        (user) async {
+      inputUser.add(user);
     });
   }
 }
@@ -174,13 +195,19 @@ abstract class MainViewModelInputs {
 
   Sink get inputIsLoading;
 
+  Sink get inputUser;
+
   incidences(bool firstQuery);
 
   incidencesActive(bool active);
 
   changeIsLoading(bool isLoading);
 
-  changeIncidenceSel(IncidenceSel incidenceSel);  deleteSession(BuildContext context);
+  changeIncidenceSel(IncidenceSel incidenceSel);
+
+  deleteSession(BuildContext context);
+
+  account();
 }
 
 abstract class MainViewModelOutputs {
@@ -191,4 +218,6 @@ abstract class MainViewModelOutputs {
   Stream<IncidenceSel> get outputIncidenceSel;
 
   Stream<bool> get outputIsLoading;
+
+  Stream<UsersModel> get outputUser;
 }
