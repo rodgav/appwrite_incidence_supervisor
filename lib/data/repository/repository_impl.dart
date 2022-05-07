@@ -77,7 +77,7 @@ class RepositoryImpl extends Repository {
   }
 
   @override
-  Future<Either<Failure, List<Incidence>>> incidences(
+  Future<Either<Failure, Incidences>> incidences(
       List<dynamic> queries, int limit, int offset) async {
     if (kIsWeb ? true : (await _networkInfo?.isConnected ?? false)) {
       try {
@@ -85,7 +85,7 @@ class RepositoryImpl extends Repository {
             await _remoteDataSource.incidences(queries, limit, offset);
         final a =
             response.documents.map((e) => incidenceFromJson(e.data)).toList();
-        return Right(a);
+        return Right(Incidences(incidences: a, total: response.total));
       } on AppwriteException catch (e) {
         return Left(Failure(e.code ?? 0,
             e.message ?? 'Some thing went wrong, try again later'));
@@ -121,6 +121,25 @@ class RepositoryImpl extends Repository {
     if (kIsWeb ? true : (await _networkInfo?.isConnected ?? false)) {
       try {
         final response = await _remoteDataSource.incidenceCreate(incidence);
+        final a = incidenceFromJson(response.data);
+        return Right(a);
+      } on AppwriteException catch (e) {
+        return Left(Failure(e.code ?? 0,
+            e.message ?? 'Some thing went wrong, try again later'));
+      } catch (error) {
+        return Left(Failure(0, error.toString()));
+      }
+    } else {
+      return Left(Failure(-7, 'Please check your internet connection'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Incidence>> incidenceUpdate(
+      Incidence incidence) async {
+    if (kIsWeb ? true : (await _networkInfo?.isConnected ?? false)) {
+      try {
+        final response = await _remoteDataSource.incidenceUpdate(incidence);
         final a = incidenceFromJson(response.data);
         return Right(a);
       } on AppwriteException catch (e) {
@@ -178,19 +197,25 @@ class RepositoryImpl extends Repository {
 
   @override
   Future<Either<Failure, List<Name>>> prioritys(int limit, int offset) async {
-    if (kIsWeb ? true : (await _networkInfo?.isConnected ?? false)) {
-      try {
-        final res = await _remoteDataSource.prioritys(limit, offset);
-        final a = res.documents.map((e) => nameFromJson(e.data)).toList();
-        return Right(a);
-      } on AppwriteException catch (e) {
-        return Left(Failure(e.code ?? 0,
-            e.message ?? 'Some thing went wrong, try again later'));
-      } catch (error) {
-        return Left(Failure(0, error.toString()));
+    try {
+      final response = _localDataSource.getPrioritys();
+      return Right(response);
+    } catch (cacheError) {
+      if (kIsWeb ? true : (await _networkInfo?.isConnected ?? false)) {
+        try {
+          final res = await _remoteDataSource.prioritys(limit, offset);
+          final a = res.documents.map((e) => nameFromJson(e.data)).toList();
+          _localDataSource.savePrioritysToCache(a);
+          return Right(a);
+        } on AppwriteException catch (e) {
+          return Left(Failure(e.code ?? 0,
+              e.message ?? 'Some thing went wrong, try again later'));
+        } catch (error) {
+          return Left(Failure(0, error.toString()));
+        }
+      } else {
+        return Left(Failure(-7, 'Please check your internet connection'));
       }
-    } else {
-      return Left(Failure(-7, 'Please check your internet connection'));
     }
   }
 }

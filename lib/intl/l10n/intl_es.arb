@@ -34,9 +34,11 @@
   "pickImage": "Elegir imagen",
   "supervisor": "Supervisor",
   "solution": "Solución",
+  "solutionError": "Solución error",
   "dateSolution": "Fecha de solución",
   "changeLanguage": "Cambiar de lenguaje",
   "user": "Usuario",
   "typeUser": "Tipo de usuario",
-  "area": "Área"
+  "area": "Área",
+  "update": "Actualizar"
 }

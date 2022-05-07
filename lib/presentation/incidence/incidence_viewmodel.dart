@@ -40,6 +40,7 @@ class IncidenceViewModel extends BaseViewModel
 
   @override
   void dispose() async {
+    inputIncidenceSel.add(IncidenceSel());
     await _prioritysStrCtrl.drain();
     _prioritysStrCtrl.close();
     await _incidenceSelStrCtrl.drain();
@@ -132,6 +133,17 @@ class IncidenceViewModel extends BaseViewModel
   }
 
   @override
+  updateIncidence(Incidence incidence, BuildContext context) async {
+    final s = S.of(context);
+    (await _incidenceUseCase.incidenceUpdate(incidence)).fold(
+        (l) => _dialogRender.showPopUp(context, DialogRendererType.errorDialog,
+            (s.error).toUpperCase(), l.message, null, null, null), (r) {
+      inputIncidenceSel.add(IncidenceSel());
+      GoRouter.of(context).go(Routes.mainRoute);
+    });
+  }
+
+  @override
   deleteSession(BuildContext context) async {
     final s = S.of(context);
     inputState.add(LoadingState(
@@ -174,6 +186,8 @@ abstract class IncidenceViewModelInputs {
   prioritys();
 
   createIncidence(Incidence incidence, BuildContext context);
+
+  updateIncidence(Incidence incidence, BuildContext context);
 
   deleteSession(BuildContext context);
 

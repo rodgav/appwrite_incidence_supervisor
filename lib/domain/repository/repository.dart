@@ -15,12 +15,13 @@ abstract class Repository {
 
   Future<Either<Failure, dynamic>> deleteSession(String sessionId);
 
-  Future<Either<Failure, List<Incidence>>> incidences(
+  Future<Either<Failure, Incidences>> incidences(
       List<dynamic> queries, int limit, int offset);
 
   Future<Either<Failure, Incidence>> incidence(String incidenceId);
 
   Future<Either<Failure, Incidence>> incidenceCreate(Incidence incidence);
+  Future<Either<Failure, Incidence>> incidenceUpdate(Incidence incidence);
 
   Future<Either<Failure, UsersModel>> user(String userId);
 

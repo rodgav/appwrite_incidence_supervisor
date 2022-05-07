@@ -60,9 +60,11 @@ class MessageLookup extends MessageLookupByLibrary {
         "save": MessageLookupByLibrary.simpleMessage("Save"),
         "sendEmail": MessageLookupByLibrary.simpleMessage("Send email"),
         "solution": MessageLookupByLibrary.simpleMessage("Solution"),
+        "solutionError": MessageLookupByLibrary.simpleMessage("Solution error"),
         "success": MessageLookupByLibrary.simpleMessage("Success"),
         "supervisor": MessageLookupByLibrary.simpleMessage("Supervisor"),
         "typeUser": MessageLookupByLibrary.simpleMessage("Type user"),
+        "update": MessageLookupByLibrary.simpleMessage("Update"),
         "user": MessageLookupByLibrary.simpleMessage("User")
       };
 }

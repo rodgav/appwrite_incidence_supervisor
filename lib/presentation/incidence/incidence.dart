@@ -44,20 +44,27 @@ class _IncidenceViewState extends State<IncidenceView> {
 
   final _formKey = GlobalKey<FormState>();
   bool active = false;
+  Incidence? _incidence;
 
   _bind() {
     _viewModel.start();
     if (widget.incidenceId != 'new') {
       if (widget.incidence != null) {
         //send data to form
+        _incidence = widget.incidence;
         final incidence = widget.incidence!;
         _nameTxtEditCtrl.text = incidence.name;
         _descrTxtEditCtrl.text = incidence.description;
         _dateCreateTxtEditCtrl.text = incidence.dateCreate.toString();
         _employeTxtEditCtrl.text = incidence.employe;
-        _supervisorTxtEditCtrl.text = incidence.supervisor;
+        _supervisorTxtEditCtrl.text = incidence.supervisor.isEmpty
+            ? _appPreferences.getName()
+            : incidence.supervisor;
         _solutionTxtEditCtrl.text = incidence.solution;
-        _dateSolutionTxtEditCtrl.text = incidence.dateSolution.toString();
+        _dateSolutionTxtEditCtrl.text =
+            incidence.dateCreate.isAtSameMomentAs(incidence.dateSolution)
+                ? (DateTime.now()).toString()
+                : incidence.dateSolution.toString();
         _viewModel.changeIncidenceSel(IncidenceSel(
             priority: incidence.priority,
             image: incidence.image,
@@ -68,13 +75,19 @@ class _IncidenceViewState extends State<IncidenceView> {
           final incidence =
               await _viewModel.incidence(context, widget.incidenceId);
           if (incidence != null) {
+            _incidence = incidence;
             _nameTxtEditCtrl.text = incidence.name;
             _descrTxtEditCtrl.text = incidence.description;
             _dateCreateTxtEditCtrl.text = incidence.dateCreate.toString();
             _employeTxtEditCtrl.text = incidence.employe;
-            _supervisorTxtEditCtrl.text = incidence.supervisor;
+            _supervisorTxtEditCtrl.text = incidence.supervisor.isEmpty
+                ? _appPreferences.getName()
+                : incidence.supervisor;
             _solutionTxtEditCtrl.text = incidence.solution;
-            _dateSolutionTxtEditCtrl.text = incidence.dateSolution.toString();
+            _dateSolutionTxtEditCtrl.text =
+                incidence.dateCreate.isAtSameMomentAs(incidence.dateSolution)
+                    ? (DateTime.now()).toString()
+                    : incidence.dateSolution.toString();
             _viewModel.changeIncidenceSel(IncidenceSel(
                 priority: incidence.priority,
                 image: incidence.image,
@@ -84,6 +97,7 @@ class _IncidenceViewState extends State<IncidenceView> {
       }
     } else {
       _dateCreateTxtEditCtrl.text = (DateTime.now()).toString();
+      _dateSolutionTxtEditCtrl.text = (DateTime.now()).toString();
       _employeTxtEditCtrl.text = _appPreferences.getName();
     }
   }
@@ -104,77 +118,82 @@ class _IncidenceViewState extends State<IncidenceView> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final s = S.of(context);
-    return Scaffold(  appBar: AppBar(
-      backgroundColor: ColorManager.white,
-      title: SizedBox(
-          height: AppSize.s60,
-          child: Image.asset(
-            ImageAssets.logo,
-            fit: BoxFit.contain,
-          )),
-      centerTitle: false,
-      actions: [
-        SizedBox(
-          width: AppSize.s60,
-          child: PopupMenuButton<String>(
-            tooltip: s.changeLanguage,
-            itemBuilder: (_) => LanguageType.values
-                .map((e) =>
-                PopupMenuItem(child: Text(e.name), value: e.getValue()))
-                .toList(),
-            child: Center(
-                child: Text(
+    return Scaffold(
+        backgroundColor: ColorManager.primary.withOpacity(0.7),
+        appBar: AppBar(
+          backgroundColor: ColorManager.white,
+          title: GestureDetector(
+            child: SizedBox(
+                height: AppSize.s60,
+                child: Image.asset(
+                  ImageAssets.logo,
+                  fit: BoxFit.contain,
+                )),
+            onTap: () => GoRouter.of(context).go(Routes.mainRoute),
+          ),
+          centerTitle: false,
+          actions: [
+            SizedBox(
+              width: AppSize.s60,
+              child: PopupMenuButton<String>(
+                tooltip: s.changeLanguage,
+                itemBuilder: (_) => LanguageType.values
+                    .map((e) =>
+                        PopupMenuItem(child: Text(e.name), value: e.getValue()))
+                    .toList(),
+                child: Center(
+                    child: Text(
                   _appPreferences.getAppLanguage(),
                   style: Theme.of(context).textTheme.bodyText2,
                 )),
-            onSelected: (value) {
-              _appPreferences.setAppLanguage(value);
-              Phoenix.rebirth(context);
-            },
-          ),
+                onSelected: (value) {
+                  _appPreferences.setAppLanguage(value);
+                  Phoenix.rebirth(context);
+                },
+              ),
+            ),
+            const SizedBox(width: AppSize.s10),
+            StreamBuilder<UsersModel>(
+                stream: _viewModel.outputUser,
+                builder: (_, snapshot) {
+                  final user = snapshot.data;
+                  return SizedBox(
+                    width: AppSize.s60,
+                    child: PopupMenuButton<String>(
+                        tooltip: user?.name ?? s.user,
+                        itemBuilder: (_) => [
+                              PopupMenuItem(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: AppPadding.p10, horizontal: 40),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('${s.user}: ${user?.name ?? s.user}'),
+                                    Text(
+                                        '${s.typeUser}: ${user?.typeUser ?? s.typeUser}'),
+                                    Text(
+                                        '${s.active}: ${user?.active ?? s.active}'),
+                                    Text('${s.area}: ${user?.area ?? s.area}'),
+                                  ],
+                                ),
+                              ),
+                              PopupMenuItem(
+                                child: ListTile(
+                                  leading: const Icon(Icons.close),
+                                  title: Text(s.close),
+                                  onTap: () {
+                                    _viewModel.deleteSession(context);
+                                  },
+                                ),
+                              )
+                            ],
+                        icon: Icon(Icons.person, color: ColorManager.black)),
+                  );
+                }),
+            const SizedBox(width: AppSize.s10)
+          ],
         ),
-        const SizedBox(width: AppSize.s10),
-        StreamBuilder<UsersModel>(
-            stream: _viewModel.outputUser,
-            builder: (_, snapshot) {
-              final user = snapshot.data;
-              return SizedBox(
-                width: AppSize.s60,
-                child: PopupMenuButton<String>(
-                    tooltip: user?.name ?? s.user,
-                    itemBuilder: (_) => [
-                      PopupMenuItem(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: AppPadding.p10, horizontal: 40),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('${s.user}: ${user?.name ?? s.user}'),
-                            Text(
-                                '${s.typeUser}: ${user?.typeUser ?? s.typeUser}'),
-                            Text(
-                                '${s.active}: ${user?.active ?? s.active}'),
-                            Text('${s.area}: ${user?.area ?? s.area}'),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        child: ListTile(
-                          leading: const Icon(Icons.close),
-                          title: Text(s.close),
-                          onTap: () {
-                            _viewModel.deleteSession(context);
-                          },
-                        ),
-                      )
-                    ],
-                    icon: Icon(Icons.person, color: ColorManager.black)),
-              );
-            }),
-        const SizedBox(width: AppSize.s10)
-      ],
-    ),
         body: StreamBuilder<FlowState>(
             stream: _viewModel.outputState,
             builder: (context, snapshot) =>
@@ -196,7 +215,8 @@ class _IncidenceViewState extends State<IncidenceView> {
   Widget _data(double width, S s) {
     return Align(
       alignment: Alignment.topCenter,
-      child: SizedBox(
+      child: Container(
+        color: ColorManager.white,
         width: width,
         child: Form(
           key: _formKey,
@@ -306,13 +326,15 @@ class _IncidenceViewState extends State<IncidenceView> {
                             value: incidenceSel?.priority != ''
                                 ? incidenceSel?.priority
                                 : null,
-                            onChanged:widget.incidenceId == 'new'? (value) {
-                              _viewModel.changeIncidenceSel(IncidenceSel(
-                                  area: incidenceSel?.area,
-                                  priority: value,
-                                  active: incidenceSel?.active,
-                                  image: incidenceSel?.image));
-                            }:null,
+                            onChanged: widget.incidenceId == 'new'
+                                ? (value) {
+                                    _viewModel.changeIncidenceSel(IncidenceSel(
+                                        area: incidenceSel?.area,
+                                        priority: value,
+                                        active: incidenceSel?.active,
+                                        image: incidenceSel?.image));
+                                  }
+                                : null,
                             validator: (value) => (value?.isNotEmpty ?? false)
                                 ? null
                                 : s.priorityError,
@@ -320,7 +342,7 @@ class _IncidenceViewState extends State<IncidenceView> {
                         : const SizedBox();
                   }),
               const SizedBox(height: AppSize.s10),
-              widget.incidenceId != 'new' ? _dataView(s) : const SizedBox(),
+              _dataView(s),
               SizedBox(
                   width: double.infinity,
                   height: AppSize.s40,
@@ -336,25 +358,51 @@ class _IncidenceViewState extends State<IncidenceView> {
                                       _dateCreateTxtEditCtrl.text),
                                   image: incidenceSel?.image ?? '',
                                   priority: incidenceSel?.priority ?? '',
-                                  area: _appPreferences.getTypeUser(),
+                                  area: _appPreferences.getArea(),
                                   employe: _employeTxtEditCtrl.text.trim(),
                                   supervisor: '',
                                   solution: '',
-                                  dateSolution: DateTime.now(),
-                                  active: incidenceSel?.active ?? true,
+                                  dateSolution: DateTime.parse(
+                                      _dateSolutionTxtEditCtrl.text),
+                                  active: true,
                                   read: [],
                                   write: [],
-                                  id: widget.incidence?.id ?? '',
+                                  id: _incidence?.id ?? '',
                                   collection: '');
                               _viewModel.createIncidence(incidence, context);
                             }
+                          }
+                        } else if (_incidence?.active ?? false) {
+                          if (_formKey.currentState!.validate()) {
+                            final incidence = Incidence(
+                                name: _nameTxtEditCtrl.text.trim(),
+                                description: _descrTxtEditCtrl.text.trim(),
+                                dateCreate:
+                                    DateTime.parse(_dateCreateTxtEditCtrl.text),
+                                image: incidenceSel?.image ?? '',
+                                priority: incidenceSel?.priority ?? '',
+                                area: _appPreferences.getArea(),
+                                employe: _employeTxtEditCtrl.text.trim(),
+                                supervisor: _supervisorTxtEditCtrl.text.trim(),
+                                solution: _solutionTxtEditCtrl.text.trim(),
+                                dateSolution: DateTime.parse(
+                                    _dateSolutionTxtEditCtrl.text),
+                                active: false,
+                                read: [],
+                                write: [],
+                                id: _incidence?.id ?? '',
+                                collection: '');
+                            _viewModel.updateIncidence(incidence, context);
                           }
                         } else {
                           GoRouter.of(context).go(Routes.mainRoute);
                         }
                       },
-                      child: Text(
-                          widget.incidenceId == 'new' ? s.save : s.close))),
+                      child: Text(widget.incidenceId == 'new'
+                          ? s.save
+                          : (_incidence?.active ?? false)
+                              ? s.update
+                              : s.close))),
             ],
           );
         });
@@ -373,7 +421,10 @@ class _IncidenceViewState extends State<IncidenceView> {
         controller: _solutionTxtEditCtrl,
         decoration:
             InputDecoration(labelText: s.solution, hintText: s.solution),
-        enabled: false,
+        enabled: _incidence?.active ?? false,
+        validator: (_incidence?.solution.isEmpty ?? true)
+            ? (value) => (value?.isNotEmpty ?? false) ? null : s.solutionError
+            : null,
       ),
       const SizedBox(height: AppSize.s10),
       TextFormField(

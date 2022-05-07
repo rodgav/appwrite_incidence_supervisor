@@ -390,6 +390,16 @@ class S {
     );
   }
 
+  /// `Solución error`
+  String get solutionError {
+    return Intl.message(
+      'Solución error',
+      name: 'solutionError',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Fecha de solución`
   String get dateSolution {
     return Intl.message(
@@ -435,6 +445,16 @@ class S {
     return Intl.message(
       'Área',
       name: 'area',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Actualizar`
+  String get update {
+    return Intl.message(
+      'Actualizar',
+      name: 'update',
       desc: '',
       args: [],
     );

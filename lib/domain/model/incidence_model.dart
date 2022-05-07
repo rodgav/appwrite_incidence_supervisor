@@ -33,3 +33,10 @@ class Incidence {
   String id;
   String collection;
 }
+
+class Incidences {
+  List<Incidence> incidences;
+  int total;
+
+  Incidences({required this.incidences, required this.total});
+}

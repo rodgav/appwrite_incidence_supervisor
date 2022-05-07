@@ -17,6 +17,7 @@ class IncidenceUseCase
         IncidenceUseCaseCreateFile<IncidenceUseCaseFile, File>,
         IncidencesUseCasePrioritys<void, List<Name>>,
         IncidenceUseCaseIncidenceCreate<Incidence, Incidence>,
+        IncidenceUseCaseIncidenceUpdate<Incidence, Incidence>,
         IncidenceUseCaseDeleteSession<String, dynamic>,
         IncidenceUseCaseAccount<String, UsersModel> {
   final Repository _repository;
@@ -44,8 +45,13 @@ class IncidenceUseCase
       _repository.incidenceCreate(incidence);
 
   @override
+  Future<Either<Failure, Incidence>> incidenceUpdate(Incidence incidence) =>
+      _repository.incidenceUpdate(incidence);
+
+  @override
   Future<Either<Failure, dynamic>> deleteSession(String sessionId) =>
       _repository.deleteSession(sessionId);
+
   @override
   Future<Either<Failure, UsersModel>> user(String userId) =>
       _repository.user(userId);
@@ -74,10 +80,14 @@ abstract class IncidenceUseCaseIncidenceCreate<In, Out> {
   Future<Either<Failure, Out>> incidenceCreate(In input);
 }
 
+abstract class IncidenceUseCaseIncidenceUpdate<In, Out> {
+  Future<Either<Failure, Out>> incidenceUpdate(In input);
+}
+
 abstract class IncidenceUseCaseDeleteSession<In, Out> {
   Future<Either<Failure, Out>> deleteSession(In input);
 }
-abstract class  IncidenceUseCaseAccount<In, Out> {
+
+abstract class IncidenceUseCaseAccount<In, Out> {
   Future<Either<Failure, Out>> user(In input);
 }
-

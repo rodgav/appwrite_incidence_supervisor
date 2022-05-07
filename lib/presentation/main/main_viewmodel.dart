@@ -3,6 +3,7 @@ import 'package:appwrite_incidence_supervisor/app/app_preferences.dart';
 import 'package:appwrite_incidence_supervisor/data/data_source/local_data_source.dart';
 import 'package:appwrite_incidence_supervisor/domain/model/incidence_model.dart';
 import 'package:appwrite_incidence_supervisor/domain/model/incidence_sel.dart';
+import 'package:appwrite_incidence_supervisor/domain/model/name_model.dart';
 import 'package:appwrite_incidence_supervisor/domain/model/user_model.dart';
 import 'package:appwrite_incidence_supervisor/domain/usecase/main_usecase.dart';
 import 'package:appwrite_incidence_supervisor/intl/generated/l10n.dart';
@@ -27,17 +28,20 @@ class MainViewModel extends BaseViewModel
   final _incidenceSelStrCtrl = BehaviorSubject<IncidenceSel>();
   final _isLoading = BehaviorSubject<bool>();
   final _userStrCtrl = BehaviorSubject<UsersModel>();
+  final _prioritysStrCtrl = BehaviorSubject<List<Name>>();
   final List<Incidence> _incidences = [];
+  int total = 0;
 
   @override
   void start() {
-    inputActives.add([true, false]);
+    prioritys();
     incidences(true);
     super.start();
   }
 
   @override
   void dispose() async {
+    _incidences.clear();
     await _incidencesStrCtrl.drain();
     _incidencesStrCtrl.close();
     await _activesStrCtrl.drain();
@@ -48,6 +52,8 @@ class MainViewModel extends BaseViewModel
     _isLoading.close();
     await _userStrCtrl.drain();
     _userStrCtrl.close();
+    await _prioritysStrCtrl.drain();
+    _prioritysStrCtrl.close();
     super.dispose();
   }
 
@@ -65,6 +71,9 @@ class MainViewModel extends BaseViewModel
 
   @override
   Sink get inputUser => _userStrCtrl.sink;
+
+  @override
+  Sink get inputPrioritys => _prioritysStrCtrl.sink;
 
   @override
   Stream<List<Incidence>> get outputIncidences =>
@@ -86,24 +95,30 @@ class MainViewModel extends BaseViewModel
   Stream<UsersModel> get outputUser => _userStrCtrl.stream.map((user) => user);
 
   @override
+  Stream<List<Name>> get outputPrioritys =>
+      _prioritysStrCtrl.stream.map((prioritys) => prioritys);
+
+  @override
   incidences(bool firstQuery) async {
     if (_incidences.isEmpty) {
       _incidences.clear();
       (await _mainUseCase.execute(MainUseCaseInput(
-              [Query.equal('employe', _appPreferences.getName())], 25, 0)))
+              [Query.equal('area', _appPreferences.getArea())], 25, 0)))
           .fold((l) {}, (incidences) {
-        _incidences.addAll(incidences);
+        total = incidences.total;
+        _incidences.addAll(incidences.incidences);
         inputIncidences.add(_incidences);
       });
     } else {
       (await _mainUseCase.execute(MainUseCaseInput(
-              [Query.equal('employe', _appPreferences.getName())],
+              [Query.equal('area', _appPreferences.getArea())],
               25,
-              _incidences.length > 1
+              _incidences.length < total
                   ? _incidences.length - 1
                   : _incidences.length)))
           .fold((l) {}, (incidences) {
-        _incidences.addAll(incidences);
+        total = incidences.total;
+        _incidences.addAll(incidences.incidences);
         inputIncidences.add(_incidences);
       });
       changeIsLoading(false);
@@ -112,22 +127,58 @@ class MainViewModel extends BaseViewModel
   }
 
   @override
-  incidencesActive(bool active) async {
+  incidencesPriority(String priority) async {
     _incidences.clear();
     if (_incidences.isEmpty) {
       _incidences.clear();
       (await _mainUseCase.execute(MainUseCaseInput([
-        Query.equal('employe', _appPreferences.getName()),
-        Query.equal('active', active)
+        Query.equal('area', _appPreferences.getArea()),
+        Query.equal('priority', priority)
       ], 25, 0)))
           .fold((l) {}, (incidences) {
-        _incidences.addAll(incidences);
+        total = incidences.total;
+        _incidences.addAll(incidences.incidences);
         inputIncidences.add(_incidences);
       });
     } else {
       (await _mainUseCase.execute(MainUseCaseInput(
               [
-            Query.equal('employe', _appPreferences.getName()),
+            Query.equal('area', _appPreferences.getArea()),
+            Query.equal('priority', priority)
+          ],
+              25,
+              _incidences.length > 1
+                  ? _incidences.length - 1
+                  : _incidences.length)))
+          .fold((l) {}, (incidences) {
+        total = incidences.total;
+        _incidences.addAll(incidences.incidences);
+        inputIncidences.add(_incidences);
+      });
+      changeIsLoading(false);
+    }
+  }
+
+  @override
+  incidencesPriorityActive(String priority, bool active) async {
+    _incidences.clear();
+    if (_incidences.isEmpty) {
+      _incidences.clear();
+      (await _mainUseCase.execute(MainUseCaseInput([
+        Query.equal('area', _appPreferences.getArea()),
+        Query.equal('priority', priority),
+        Query.equal('active', active)
+      ], 25, 0)))
+          .fold((l) {}, (incidences) {
+        total = incidences.total;
+        _incidences.addAll(incidences.incidences);
+        inputIncidences.add(_incidences);
+      });
+    } else {
+      (await _mainUseCase.execute(MainUseCaseInput(
+              [
+            Query.equal('area', _appPreferences.getArea()),
+            Query.equal('priority', priority),
             Query.equal('active', active)
           ],
               25,
@@ -135,7 +186,8 @@ class MainViewModel extends BaseViewModel
                   ? _incidences.length - 1
                   : _incidences.length)))
           .fold((l) {}, (incidences) {
-        _incidences.addAll(incidences);
+        total = incidences.total;
+        _incidences.addAll(incidences.incidences);
         inputIncidences.add(_incidences);
       });
       changeIsLoading(false);
@@ -151,10 +203,14 @@ class MainViewModel extends BaseViewModel
   changeIncidenceSel(IncidenceSel incidenceSel) async {
     inputIncidenceSel.add(incidenceSel);
     _incidences.clear();
-    if (incidenceSel.active == null) {
-      await incidences(true);
-    } else {
-      await incidencesActive(incidenceSel.active ?? false);
+    if (incidenceSel.priority != '') {
+      inputActives.add([true, false]);
+      if (incidenceSel.active == null) {
+        await incidencesPriority(incidenceSel.priority);
+      } else {
+        await incidencesPriorityActive(
+            incidenceSel.priority, incidenceSel.active ?? false);
+      }
     }
   }
 
@@ -165,8 +221,7 @@ class MainViewModel extends BaseViewModel
         stateRendererType: StateRendererType.fullScreenLoadingState,
         message: s.loading));
     final sessionId = _appPreferences.getSessionId();
-    (await _mainUseCase.deleteSession(sessionId))
-        .fold((f) {
+    (await _mainUseCase.deleteSession(sessionId)).fold((f) {
       inputState
           .add(ErrorState(StateRendererType.fullScreenErrorState, f.message));
     }, (r) async {
@@ -184,6 +239,13 @@ class MainViewModel extends BaseViewModel
       inputUser.add(user);
     });
   }
+
+  @override
+  prioritys() async {
+    (await _mainUseCase.prioritys(null)).fold((l) {}, (prioritys) {
+      inputPrioritys.add(prioritys);
+    });
+  }
 }
 
 abstract class MainViewModelInputs {
@@ -197,9 +259,13 @@ abstract class MainViewModelInputs {
 
   Sink get inputUser;
 
+  Sink get inputPrioritys;
+
   incidences(bool firstQuery);
 
-  incidencesActive(bool active);
+  incidencesPriority(String priority);
+
+  incidencesPriorityActive(String priority, bool active);
 
   changeIsLoading(bool isLoading);
 
@@ -208,6 +274,8 @@ abstract class MainViewModelInputs {
   deleteSession(BuildContext context);
 
   account();
+
+  prioritys();
 }
 
 abstract class MainViewModelOutputs {
@@ -220,4 +288,6 @@ abstract class MainViewModelOutputs {
   Stream<bool> get outputIsLoading;
 
   Stream<UsersModel> get outputUser;
+
+  Stream<List<Name>> get outputPrioritys;
 }

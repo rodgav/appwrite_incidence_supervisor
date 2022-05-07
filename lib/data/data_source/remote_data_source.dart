@@ -17,6 +17,8 @@ abstract class RemoteDataSource {
 
   Future<Document> incidenceCreate(Incidence incidence);
 
+  Future<Document> incidenceUpdate(Incidence incidence);
+
   Future<Document> user(String userId);
 
   Future<File> createFile(Uint8List uint8list, String name);
@@ -52,7 +54,9 @@ class RemoteDataSourceImpl implements RemoteDataSource {
 
   @override
   Future<Document> incidenceCreate(Incidence incidence) =>
-      _appServiceClient.incidenceCreate(incidence);
+      _appServiceClient.incidenceCreate(incidence);  @override
+  Future<Document> incidenceUpdate(Incidence incidence) =>
+      _appServiceClient.incidenceUpdate(incidence);
 
   @override
   Future<Document> user(String userId) => _appServiceClient.user(userId);

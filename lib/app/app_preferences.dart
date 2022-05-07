@@ -9,6 +9,7 @@ const String sessionKey = 'sessionKey';
 const String userKey = 'userKey';
 const String nameKey = 'nameKey';
 const String typeUserKey = 'typeUserKey';
+const String areaUserKey = 'areaUserKey';
 
 class AppPreferences {
   final SharedPreferences _sharedPreferences;
@@ -44,8 +45,8 @@ class AppPreferences {
     }
   }
 
-  Future<void> setSessionIds(
-      String sessionId, String userId, String name,String typeUser) async {
+  Future<void> setSessionIds(String sessionId, String userId, String name,
+      String typeUser, String area) async {
     await _sharedPreferences.setString(
         userKey, _encryptHelper.encrypt(userId) ?? '');
     await _sharedPreferences.setString(
@@ -54,6 +55,8 @@ class AppPreferences {
         nameKey, _encryptHelper.encrypt(name) ?? '');
     await _sharedPreferences.setString(
         typeUserKey, _encryptHelper.encrypt(typeUser) ?? '');
+    await _sharedPreferences.setString(
+        areaUserKey, _encryptHelper.encrypt(area) ?? '');
   }
 
   String getUserId() {
@@ -82,11 +85,21 @@ class AppPreferences {
     }
     return '';
   }
+
   String getTypeUser() {
     final typeUserEncry = _sharedPreferences.getString(typeUserKey) ?? '';
     final typeUserDecry = _encryptHelper.decrypt(typeUserEncry) ?? '';
     if (typeUserDecry != '') {
       return typeUserDecry;
+    }
+    return '';
+  }
+
+  String getArea() {
+    final areaUserEncry = _sharedPreferences.getString(areaUserKey) ?? '';
+    final areaUserDecry = _encryptHelper.decrypt(areaUserEncry) ?? '';
+    if (areaUserDecry != '') {
+      return areaUserDecry;
     }
     return '';
   }

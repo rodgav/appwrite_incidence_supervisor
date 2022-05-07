@@ -47,6 +47,14 @@ class AppServiceClient {
           read: ['role:member'],
           write: ['role:member']);
 
+  Future<Document> incidenceUpdate(Incidence incidence) =>
+      _database.updateDocument(
+          collectionId: Constant.incidencesId,
+          documentId: incidence.id,
+          data: incidenceToJson(incidence),
+          read: ['role:member'],
+          write: ['role:member']);
+
   Future<Document> user(String userId) =>
       _database.getDocument(collectionId: Constant.usersId, documentId: userId);
 

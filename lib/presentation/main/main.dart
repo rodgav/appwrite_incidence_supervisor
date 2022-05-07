@@ -2,6 +2,7 @@ import 'package:appwrite_incidence_supervisor/app/app_preferences.dart';
 import 'package:appwrite_incidence_supervisor/app/dependency_injection.dart';
 import 'package:appwrite_incidence_supervisor/domain/model/incidence_model.dart';
 import 'package:appwrite_incidence_supervisor/domain/model/incidence_sel.dart';
+import 'package:appwrite_incidence_supervisor/domain/model/name_model.dart';
 import 'package:appwrite_incidence_supervisor/domain/model/user_model.dart';
 import 'package:appwrite_incidence_supervisor/intl/generated/l10n.dart';
 import 'package:appwrite_incidence_supervisor/presentation/common/state_render/state_render_impl.dart';
@@ -50,14 +51,18 @@ class _MainViewState extends State<MainView> {
     final size = MediaQuery.of(context).size;
     final s = S.of(context);
     return Scaffold(
+      backgroundColor: ColorManager.primary.withOpacity(0.7),
       appBar: AppBar(
         backgroundColor: ColorManager.white,
-        title: SizedBox(
-            height: AppSize.s60,
-            child: Image.asset(
-              ImageAssets.logo,
-              fit: BoxFit.contain,
-            )),
+        title: GestureDetector(
+          child: SizedBox(
+              height: AppSize.s60,
+              child: Image.asset(
+                ImageAssets.logo,
+                fit: BoxFit.contain,
+              )),
+          onTap: () => GoRouter.of(context).go(Routes.mainRoute),
+        ),
         centerTitle: false,
         actions: [
           SizedBox(
@@ -144,7 +149,8 @@ class _MainViewState extends State<MainView> {
 
   Widget _data(double width, S s) {
     return Center(
-      child: SizedBox(
+      child: Container(
+        color: ColorManager.white,
         width: width,
         child: StreamBuilder<IncidenceSel>(
             stream: _viewModel.outputIncidenceSel,
@@ -154,9 +160,16 @@ class _MainViewState extends State<MainView> {
                 onNotification: (ScrollNotification scrollInfo) {
                   if (scrollInfo.metrics.maxScrollExtent ==
                       scrollInfo.metrics.pixels) {
-                    if (incidenceSel?.active != null) {
-                      _viewModel
-                          .incidencesActive(incidenceSel?.active ?? false);
+                    if (incidenceSel?.priority != null &&
+                        incidenceSel?.priority != '') {
+                      if (incidenceSel?.active != null) {
+                        _viewModel.incidencesPriorityActive(
+                            incidenceSel?.priority ?? '',
+                            incidenceSel?.active ?? false);
+                      } else {
+                        _viewModel
+                            .incidencesPriority(incidenceSel?.priority ?? '');
+                      }
                     } else {
                       _viewModel.incidences(false);
                     }
@@ -237,30 +250,65 @@ class _MainViewState extends State<MainView> {
                     const SizedBox(width: AppSize.s20),
                     SizedBox(
                       width: AppSize.s140,
-                      child: StreamBuilder<List<bool>?>(
-                          stream: _viewModel.outputActives,
+                      child: StreamBuilder<List<Name>?>(
+                          stream: _viewModel.outputPrioritys,
                           builder: (_, snapshot) {
-                            final actives = snapshot.data;
-                            return actives != null && actives.isNotEmpty
-                                ? DropdownButtonFormField<bool?>(
+                            final prioritys = snapshot.data;
+                            return prioritys != null && prioritys.isNotEmpty
+                                ? DropdownButtonFormField<String?>(
                                     isExpanded: true,
-                                    decoration:
-                                        InputDecoration(label: Text(s.active)),
-                                    hint: Text(s.active),
-                                    items: actives
+                                    decoration: InputDecoration(
+                                        label: Text(s.priority)),
+                                    hint: Text(s.priority),
+                                    items: prioritys
                                         .map((e) => DropdownMenuItem(
-                                              child: Text(e.toString()),
-                                              value: e,
+                                              child: Text(e.name),
+                                              value: e.name,
                                             ))
                                         .toList(),
-                                    value: incidenceSel?.active,
+                                    value: incidenceSel?.priority == ''
+                                        ? null
+                                        : incidenceSel?.priority,
                                     onChanged: (value) {
                                       _viewModel.changeIncidenceSel(
-                                          IncidenceSel(active: value));
+                                          IncidenceSel(priority: value));
                                     })
                                 : const SizedBox();
                           }),
                     ),
+                    const SizedBox(width: AppSize.s10),
+                    incidenceSel?.priority != null &&
+                            incidenceSel?.priority != ''
+                        ? SizedBox(
+                            width: AppSize.s140,
+                            child: StreamBuilder<List<bool>?>(
+                                stream: _viewModel.outputActives,
+                                builder: (_, snapshot) {
+                                  final actives = snapshot.data;
+                                  return actives != null && actives.isNotEmpty
+                                      ? DropdownButtonFormField<bool?>(
+                                          isExpanded: true,
+                                          decoration: InputDecoration(
+                                              label: Text(s.active)),
+                                          hint: Text(s.active),
+                                          items: actives
+                                              .map((e) => DropdownMenuItem(
+                                                    child: Text(e.toString()),
+                                                    value: e,
+                                                  ))
+                                              .toList(),
+                                          value: incidenceSel?.active,
+                                          onChanged: (value) {
+                                            _viewModel.changeIncidenceSel(
+                                                IncidenceSel(
+                                                    priority:
+                                                        incidenceSel?.priority,
+                                                    active: value));
+                                          })
+                                      : const SizedBox();
+                                }),
+                          )
+                        : const SizedBox(),
                     const SizedBox(width: AppSize.s20),
                   ],
                 ),
