@@ -4,12 +4,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'encrypt_helper.dart';
 
-const String languageKey = 'languageKey';
-const String sessionKey = 'sessionKey';
-const String userKey = 'userKey';
-const String nameKey = 'nameKey';
-const String typeUserKey = 'typeUserKey';
-const String areaUserKey = 'areaUserKey';
+const String languageKey = 'languageKeySupervisor';
+const String sessionKey = 'sessionKeySupervisor';
+const String userKey = 'userKeySupervisor';
+const String nameKey = 'nameKeySupervisor';
+const String typeUserKey = 'typeUserKeySupervisor';
+const String areaUserKey = 'areaUserKeySupervisor';
 
 class AppPreferences {
   final SharedPreferences _sharedPreferences;

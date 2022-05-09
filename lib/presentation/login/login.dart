@@ -67,7 +67,9 @@ class _LoginViewState extends State<LoginView> {
   Widget _form(double width, S s) {
     return Center(
       child: Container(
-        color: ColorManager.white,
+    decoration: BoxDecoration(
+    color: ColorManager.white,
+        borderRadius: BorderRadius.circular(AppSize.s10)),
         width: width,
         child: SingleChildScrollView(
           child: Padding(

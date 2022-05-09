@@ -40,5 +40,6 @@
   "user": "Usuario",
   "typeUser": "Tipo de usuario",
   "area": "Área",
-  "update": "Actualizar"
+  "update": "Actualizar",
+  "haveAccount": "Tengo una cuenta"
 }

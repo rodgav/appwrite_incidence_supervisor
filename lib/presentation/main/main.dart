@@ -143,7 +143,7 @@ class _MainViewState extends State<MainView> {
 
   Widget _getContentWidget(Size size, S s) {
     return ResponsiveWid(
-        smallScreen: _data(size.width * 0.8, s),
+        smallScreen: _data(size.width, s),
         largeScreen: _data(size.width * 0.5, s));
   }
 

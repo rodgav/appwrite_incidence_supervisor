@@ -41,6 +41,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "error": MessageLookupByLibrary.simpleMessage("Error"),
         "forgotPassword":
             MessageLookupByLibrary.simpleMessage("Forgot password"),
+        "haveAccount": MessageLookupByLibrary.simpleMessage("Have account"),
         "incidence": MessageLookupByLibrary.simpleMessage("Incidence"),
         "inputEmail": MessageLookupByLibrary.simpleMessage("Email"),
         "inputEmailError": MessageLookupByLibrary.simpleMessage("Email error"),

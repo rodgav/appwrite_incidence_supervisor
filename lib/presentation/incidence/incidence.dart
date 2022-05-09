@@ -213,8 +213,7 @@ class _IncidenceViewState extends State<IncidenceView> {
   }
 
   Widget _data(double width, S s) {
-    return Align(
-      alignment: Alignment.topCenter,
+    return Center(
       child: Container(
         color: ColorManager.white,
         width: width,
@@ -342,7 +341,7 @@ class _IncidenceViewState extends State<IncidenceView> {
                         : const SizedBox();
                   }),
               const SizedBox(height: AppSize.s10),
-              _dataView(s),
+              widget.incidenceId != 'new' ? _dataView(s) : const SizedBox(),
               SizedBox(
                   width: double.infinity,
                   height: AppSize.s40,

@@ -4,8 +4,10 @@ import 'package:appwrite_incidence_supervisor/presentation/common/state_render/s
 import 'package:appwrite_incidence_supervisor/presentation/global_widgets/responsive.dart';
 import 'package:appwrite_incidence_supervisor/presentation/resources/assets_manager.dart';
 import 'package:appwrite_incidence_supervisor/presentation/resources/color_manager.dart';
+import 'package:appwrite_incidence_supervisor/presentation/resources/routes_manager.dart';
 import 'package:appwrite_incidence_supervisor/presentation/resources/values_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'forgot_password_viewmodel.dart';
 
@@ -46,7 +48,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
     final size = MediaQuery.of(context).size;
     final s = S.of(context);
     return Scaffold(
-      backgroundColor: ColorManager.white,
+      backgroundColor: ColorManager.primary.withOpacity(0.7),
       body: StreamBuilder<FlowState>(
           stream: _viewModel.outputState,
           builder: (context, snapshot) =>
@@ -68,7 +70,10 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
 
   Widget _form(double width, S s) {
     return Center(
-        child: SizedBox(
+        child: Container(
+            decoration: BoxDecoration(
+                color: ColorManager.white,
+                borderRadius: BorderRadius.circular(AppSize.s10)),
             width: width,
             child: SingleChildScrollView(
               child: Padding(
@@ -101,12 +106,20 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                         StreamBuilder<bool>(
                             stream: _viewModel.outputInputValidate,
                             builder: (_, snapshot) {
-                              return ElevatedButton(
-                                  onPressed: (snapshot.data ?? false)
-                                      ? () => _viewModel.forgotPassword(context)
-                                      : null,
-                                  child: Text(s.recover));
-                            })
+                              return Row(   mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ElevatedButton(
+                                      onPressed: (snapshot.data ?? false)
+                                          ? () => _viewModel.forgotPassword(context)
+                                          : null,
+                                      child: Text(s.recover)),    const SizedBox(width: AppSize.s10),
+                                  TextButton(
+                                      onPressed: () => GoRouter.of(context)
+                                          .go(Routes.loginRoute),
+                                      child: Text(s.haveAccount))
+                                ],
+                              );
+                            }) ,   const SizedBox(height: AppSize.s28),
                       ],
                     )),
               ),
