@@ -130,6 +130,23 @@ The objective of this project is to facilitate the creation and solution of inci
 ### Attribution of graphic elements used in the project:
 - [Jpg icons created by smalllikeart - Flaticon](https://www.flaticon.com/free-icons/jpg)
 - [Vector de niño y adulto creado por freepik - www.freepik.es](https://www.freepik.es/vectores/nino-adulto)
+- [appwrite](https://appwrite.io/assets)
+
+### open source projects used
+- [appwrite](https://github.com/appwrite/appwrite)
+- [dartz](https://github.com/spebbe/dartz)
+- [internet_connection_checker](https://github.com/RounakTadvi/internet_connection_checker)
+- [get_it](https://github.com/fluttercommunity/get_it)
+- [shared_preferences](https://github.com/flutter/plugins/tree/main/packages/shared_preferences/shared_preferences)
+- [rxdart](https://github.com/ReactiveX/rxdart)
+- [encrypt](https://github.com/leocavalcante/encrypt)
+- [go_router](https://github.com/flutter/packages/tree/main/packages/go_router)
+- [intl](https://github.com/dart-lang/intl)
+- [flutter_phoenix](https://github.com/mobiten/flutter_phoenix)
+- [image_picker](https://github.com/flutter/plugins/tree/main/packages/image_picker/image_picker)
+- [build_runner](https://github.com/dart-lang/build/tree/master/build_runner)
+- [freezed](https://github.com/rrousselGit/freezed)
+- [file_picker](https://github.com/miguelpruivo/flutter_file_picker)
 
 ## Docs
 - [flutter documentation](https://flutter.dev/docs).
