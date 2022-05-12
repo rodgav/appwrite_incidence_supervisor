@@ -24,7 +24,6 @@ project presented by Rodolfo Samuel Gavilan Muñoz for the appwrite hackathon.
     |image          | string    |required      |
     |priority       | string    |required      |
     |area           | string    |required      |
-    |name           | string    |required      |
     |employe        | string    |required      |
     |supervisor     | string    |required      |
     |solution       | string    |required      |
@@ -146,7 +145,6 @@ The objective of this project is to facilitate the creation and solution of inci
 - [image_picker](https://github.com/flutter/plugins/tree/main/packages/image_picker/image_picker)
 - [build_runner](https://github.com/dart-lang/build/tree/master/build_runner)
 - [freezed](https://github.com/rrousselGit/freezed)
-- [file_picker](https://github.com/miguelpruivo/flutter_file_picker)
 
 ## Docs
 - [flutter documentation](https://flutter.dev/docs).
